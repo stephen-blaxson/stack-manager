@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Manager</title>
+
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, sans-serif; background: #f3f4f8; color: #20243a; }
+        header { background: #5145cd; color: white; padding: 25px 20px; text-align: center; }
+        header h1 { margin: 0 0 8px; }
+        header p { margin: 0; color: #e5e3ff; }
+        main { max-width: 900px; margin: 30px auto; padding: 0 18px; }
+        .card { background: white; padding: 24px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 4px 15px #20243a0c; }
+        h2 { margin-top: 0; font-size: 20px; }
+        .input-area { display: flex; gap: 10px; }
+        input { flex: 1; min-width: 0; padding: 13px; border: 1px solid #d6d8e5; border-radius: 8px; font-size: 16px; }
+        button { padding: 12px 16px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        button:hover { opacity: 0.88; }
+        .push-btn { background: #5145cd; color: white; }
+        .pop-btn { background: #e5484d; color: white; }
+        .peek-btn { background: #16845b; color: white; }
+        .clear-btn { background: #e9eaf2; color: #20243a; }
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .status { margin-top: 18px; padding: 12px; border-radius: 8px; background: #f0efff; color: #5145cd; font-size: 14px; }
+        .stack-container { min-height: 220px; border: 2px dashed #d6d8e5; border-radius: 10px; padding: 15px; display: flex; flex-direction: column-reverse; justify-content: flex-start; align-items: center; gap: 8px; background: #fafaff; }
+        .stack-item { width: 85%; max-width: 350px; padding: 14px; border-radius: 8px; background: #e8e6ff; border: 1px solid #c5bfff; text-align: center; font-weight: bold; overflow-wrap: anywhere; }
+        .stack-item.top { background: #5145cd; border-color: #5145cd; color: white; }
+        .empty-message { color: #777b90; margin: auto; text-align: center; padding: 25px 0; }
+        .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .info-box { padding: 16px; background: #f7f7fc; border-radius: 10px; text-align: center; }
+        .info-box strong { display: block; color: #5145cd; font-size: 24px; margin-bottom: 5px; }
+        .info-box span { font-size: 13px; color: #666a80; }
+        footer { text-align: center; padding: 20px; color: #777b90; font-size: 13px; }
+        @media (max-width: 520px) {
+            .input-area { flex-direction: column; }
+            .info-grid { grid-template-columns: 1fr; }
+            .actions button { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Stack Manager</h1>
+        <p>Learn how the LIFO data structure works</p>
+    </header>
+    <main>
+        <section class="card">
+            <h2>Add an Item</h2>
+            <div class="input-area">
+                <input type="text" id="itemInput" placeholder="Enter an item, e.g. Book" maxlength="100">
+                <button class="push-btn" onclick="pushItem()">Push Item</button>
+            </div>
+            <div class="actions">
+                <button class="pop-btn" onclick="popItem()">Pop Item</button>
+                <button class="peek-btn" onclick="peekItem()">Peek Top</button>
+                <button class="clear-btn" onclick="clearStack()">Clear Stack</button>
+            </div>
+            <div class="status" id="status">Welcome! Add an item to begin.</div>
+        </section>
+        <section class="card">
+            <h2>Visual Stack</h2>
+            <p>The newest item is always at the top.</p>
+            <div class="stack-container" id="stackDisplay">
+                <div class="empty-message">Your stack is empty.</div>
+            </div>
+        </section>
+        <section class="card">
+            <h2>Stack Information</h2>
+            <div class="info-grid">
+                <div class="info-box"><strong id="stackSize">0</strong><span>Total Items</span></div>
+                <div class="info-box"><strong id="topItem">None</strong><span>Top Item</span></div>
+                <div class="info-box"><strong>LIFO</strong><span>Stack Principle</span></div>
+            </div>
+        </section>
+        <section class="card">
+            <h2>How it works</h2>
+            <p><strong>Push:</strong> Adds a new item to the top.</p>
+            <p><strong>Pop:</strong> Removes the item at the top.</p>
+            <p><strong>Peek:</strong> Shows the top item without removing it.</p>
+            <p><strong>LIFO:</strong> Last In, First Out. The last item added is the first one removed.</p>
+        </section>
+    </main>
+    <footer>Stack Manager | Data Structures Project</footer>
+    <script>
+        let stack = [];
+        function pushItem() {
+            const input = document.getElementById("itemInput");
+            const item = input.value.trim();
+            if (item === "") { showStatus("Please enter an item first."); return; }
+            stack.push(item);
+            input.value = "";
+            input.focus();
+            renderStack();
+            showStatus('"' + item + '" was added to the stack.');
+        }
+        function popItem() {
+            if (stack.length === 0) { showStatus("The stack is empty. Nothing to remove."); return; }
+            const removedItem = stack.pop();
+            renderStack();
+            showStatus('"' + removedItem + '" was removed from the stack.');
+        }
+        function peekItem() {
+            if (stack.length === 0) { showStatus("The stack is empty. There is no top item."); return; }
+            const top = stack[stack.length - 1];
+            showStatus('The top item is "' + top + '".');
+        }
+        function clearStack() { stack = []; renderStack(); showStatus("The stack has been cleared."); }
+        function renderStack() {
+            const display = document.getElementById("stackDisplay");
+            display.innerHTML = "";
+            if (stack.length === 0) {
+                display.innerHTML = '<div class="empty-message">Your stack is empty.</div>';
+            } else {
+                for (let i = stack.length - 1; i >= 0; i--) {
+                    const item = document.createElement("div");
+                    item.className = "stack-item";
+                    if (i === stack.length - 1) { item.classList.add("top"); item.textContent = "TOP → " + stack[i]; }
+                    else { item.textContent = stack[i]; }
+                    display.appendChild(item);
+                }
+            }
+            document.getElementById("stackSize").textContent = stack.length;
+            document.getElementById("topItem").textContent = stack.length > 0 ? stack[stack.length - 1] : "None";
+        }
+        function showStatus(message) { document.getElementById("status").textContent = message; }
+        document.getElementById("itemInput").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") { pushItem(); }
+        });
+    </script>
+</body>
+</html>
